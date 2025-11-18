@@ -17,7 +17,7 @@ playwav() {
         nohup play "$file" >/dev/null 2>&1 &
 
     elif command -v ffplay >/dev/null 2>&1; then
-        ffplay -nodisp -autoexit -loglevel quiet "$file"
+        $(which ffplay) -nodisp -autoexit -loglevel quiet "$file"
 
     else
         return 2  # nenhum player disponível
@@ -44,7 +44,7 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-if echo "$USER" >/dev/null 2>&1; then
+if [[ -n "$USER" ]]; then
     fUSER=", $USER"
 else
     fUSER=""
