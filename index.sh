@@ -87,6 +87,7 @@ clear
 sleep 0.5
 
 animation "Starting" "Starting." "Starting.." "Starting..." 0.5 
+playwav startup.wav
 
 sleep 0.5
 echo -e "      ${RED}        ,.=:!!t3Z3z.,"
@@ -110,7 +111,6 @@ echo -e "   | |    | | '_ \ / _ \ \ /\ / / __|    / /  "
 echo -e "   | |____| | | | | (_) \ V  V /\__ \   / /   "
 echo -e "   |______|_|_| |_|\___/ \_/\_/ |___/  /_/    "
 
-playwav startup.wav
 sleep 1
 
 echo -e "\n  Welcome to Linows 7 installation$fUSER!\n"
