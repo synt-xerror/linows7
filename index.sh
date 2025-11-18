@@ -44,6 +44,12 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+if echo "$USER" >/dev/null 2>&1; then
+    fUSER=", $USER"
+else
+    fUSER=""
+fi
+
 clear
 
 sleep 0.5
@@ -75,7 +81,7 @@ echo -e "   |______|_|_| |_|\___/ \_/\_/ |___/  /_/    "
 playwav startup.wav
 sleep 1
 
-echo -e "\n  Welcome to Linows 7 installation, $USER!\n"
+echo -e "\n  Welcome to Linows 7 installation$fUSER!\n"
 sleep 1
 
 read -p "  Press ENTER: "
