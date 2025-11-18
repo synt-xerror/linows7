@@ -9,10 +9,16 @@ playwav() {
 
     if command -v aplay >/dev/null 2>&1; then
         nohup aplay "$file" >/dev/null 2>&1 &
+
     elif command -v paplay >/dev/null 2>&1; then
         nohup paplay "$file" >/dev/null 2>&1 &
+
     elif command -v play >/dev/null 2>&1; then
         nohup play "$file" >/dev/null 2>&1 &
+
+    elif command -v ffplay >/dev/null 2>&1; then
+        ffplay -nodisp -autoexit -loglevel quiet "$file"
+
     else
         return 2  # nenhum player disponível
     fi
