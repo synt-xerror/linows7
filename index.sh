@@ -1,28 +1,60 @@
 #!/bin/bash
 
+player_ok() {
+    "$@" >/dev/null 2>&1 &
+    local pid=$!
+
+    # espera 0.2s para saber se o processo morreu (erro) ou continua (ok)
+    sleep 0.2
+
+    if ! kill -0 "$pid" 2>/dev/null; then
+        return 1  # morreu -> falhou
+    fi
+
+    kill "$pid" 2>/dev/null
+    return 0  # funciona
+}
+
 playwav() {
     local file="$1"
 
-    if [[ ! -f "$file" ]]; then
-        return 1  # arquivo não existe
-    fi
+    [[ -f "$file" ]] || return 1
 
+    # aplay
     if command -v aplay >/dev/null 2>&1; then
-        nohup aplay "$file" >/dev/null 2>&1 &
-
-    elif command -v paplay >/dev/null 2>&1; then
-        nohup paplay "$file" >/dev/null 2>&1 &
-
-    elif command -v play >/dev/null 2>&1; then
-        nohup play "$file" >/dev/null 2>&1 &
-
-    elif command -v ffplay >/dev/null 2>&1; then
-        $(which ffplay) -nodisp -autoexit -loglevel quiet "$file"
-
-    else
-        return 2  # nenhum player disponível
+        if player_ok aplay "$file"; then
+            nohup aplay "$file" >/dev/null 2>&1 &
+            return 0
+        fi
     fi
+
+    # paplay
+    if command -v paplay >/dev/null 2>&1; then
+        if player_ok paplay "$file"; then
+            nohup paplay "$file" >/dev/null 2>&1 &
+            return 0
+        fi
+    fi
+
+    # play (SoX)
+    if command -v play >/dev/null 2>&1; then
+        if player_ok play "$file"; then
+            nohup play "$file" >/dev/null 2>&1 &
+            return 0
+        fi
+    fi
+
+    # ffplay
+    if command -v ffplay >/dev/null 2>&1; then
+        if player_ok ffplay -nodisp -autoexit -loglevel quiet "$file"; then
+            ffplay -nodisp -autoexit -loglevel quiet "$file"
+            return 0
+        fi
+    fi
+
+    return 2  # nenhum player funcional
 }
+
 
 animation() {
     frames=("$@")
