@@ -72,110 +72,100 @@ anime() {
         fi
     done
 }
+s=0
+menu() {
+    title="$1"
+    shift
+    options=("$@")
 
-language() {
-    if [[ -f ./lang ]]; then
-        lang=$(cat ./lang)
-    else
-        s=0
-        options() {
-            local args=("$@")
+    while true; do
+        clear
+        
+        if [ $s -lt 0 ]; then
+            s=0
+        elif [ $s -gt $((${#options[@]} - 1)) ]; then
+            s=$((${#options[@]} - 1)) 
+        fi
 
-            for i in "${!args[@]}"; do
-                if [[ $s == $i ]]; then
-                    echo -e "\e[30;47m> ${args[i]}\e[0m"
-                else
-                    echo -e "  ${args[i]}"
-                fi
-            done
-        }
-
-        while true; do
-            clear
-            # evita ficar preso
-            if [ $s -lt 0 ]; then
-                s=0
-            elif [ $s -gt 1 ]; then
-                s=1
+        echo -e "$title\n"
+        for i in "${!options[@]}"; do
+            if [[ $s == $i ]]; then
+                echo -e "\e[30;47m> ${options[i]}\e[0m"
+            else
+                echo -e "  ${options[i]}"
             fi
-
-            echo -e "Before continue, select a language."
-            echo -e "Antes de continuar, selecione um idioma.\n"
-            options "English (US)" "Português (Brasil)"
-
-            read -rsn1 key
-            if [[ -z $key ]]; then
-                key=$'\n'
-            elif [[ $key == $'\e' ]]; then
-                read -rsn2 -t 0.01 rest
-                key+="$rest"
-            fi
-            case $key in
-                $'\e[A') s=$((s-1)) ;;
-                $'\e[B') s=$((s+1)) ;;
-                $'\n'|$'\r') selected="$s"; break ;;
-                $'\e') echo "Saindo..."; break ;;
-                *) ;;
-            esac
         done
 
-        if [[ $selected == "0" ]]; then
-            lang="en-us"
-        elif [[ $selected == "1" ]]; then
-            lang="pt-br"
+        if [[ -n "$footer" ]]; then
+            echo -e "\n$footer"
         fi
-        echo "$lang" > ./lang
-    fi
+
+        read -rsn1 key
+        if [[ -z $key ]]; then
+            key=$'\n'
+        elif [[ $key == $'\e' ]]; then
+            read -rsn2 -t 0.01 rest
+            key+="$rest"
+        fi
+        case $key in
+            $'\e[A') s=$((s-1)) ;;
+            $'\e[B') s=$((s+1)) ;;
+            $'\e') exit 0;;
+            $'\n'|$'\r') selected="$s"; break ;;
+            *) ;;
+        esac
+    done
 }
+
 
 lecho() {
     if [[ -z "$lang" ]]; then
-        echo -e "toybox.sh - lecho: ${RED}TypeError:${NC} Cannot read properties of null (reading 'lang'). Have you run function 'language' before?"
+        echo -e "toybox.sh - lecho: ${RED}TypeError:${NC} Cannot read properties of null (reading 'lang')"
         exit 1
     fi
 
     local prompt
-    [[ "$lang" == "pt-br" ]] && prompt="$1"
-    [[ "$lang" == "en-us" ]] && prompt="$2"
+    [[ "$lang" == "1" ]] && prompt="$1"
+    [[ "$lang" == "0" ]] && prompt="$2"
 
     echo "$prompt"
 }
 
 lechoe() {
     if [[ -z "$lang" ]]; then
-        echo -e "toybox.sh - lechoe: ${RED}TypeError:${NC} Cannot read properties of null (reading 'lang'). Have you run function 'language' before?"
+        echo -e "toybox.sh - lechoe: ${RED}TypeError:${NC} Cannot read properties of null (reading 'lang')"
         exit 1
     fi
 
     local prompt
-    [[ "$lang" == "pt-br" ]] && prompt="$1"
-    [[ "$lang" == "en-us" ]] && prompt="$2"
+    [[ "$lang" == "1" ]] && prompt="$1"
+    [[ "$lang" == "0" ]] && prompt="$2"
 
     echo -e "$prompt"
 }
 
 lprintf() {
     if [[ -z "$lang" ]]; then
-        echo -e "toybox.sh - lprintf: ${RED}TypeError:${NC} Cannot read properties of null (reading 'lang'). Have you run function 'language' before?"
+        echo -e "toybox.sh - lprintf: ${RED}TypeError:${NC} Cannot read properties of null (reading 'lang')"
         exit 1
     fi
 
     local prompt
-    [[ "$lang" == "pt-br" ]] && prompt="$1"
-    [[ "$lang" == "en-us" ]] && prompt="$2"
+    [[ "$lang" == "1" ]] && prompt="$1"
+    [[ "$lang" == "0" ]] && prompt="$2"
 
     printf "$prompt"
 }
 
 lreadp() {
     if [[ -z "$lang" ]]; then
-        echo -e "toybox.sh - lreadp: ${RED}TypeError:${NC} Cannot read properties of null (reading 'lang'). Have you run function 'language' before?"
+        echo -e "toybox.sh - lreadp: ${RED}TypeError:${NC} Cannot read properties of null (reading 'lang')"
         exit 1
     fi
 
     local prompt
-    [[ "$lang" == "pt-br" ]] && prompt="$1"
-    [[ "$lang" == "en-us" ]] && prompt="$2"
+    [[ "$lang" == "1" ]] && prompt="$1"
+    [[ "$lang" == "0" ]] && prompt="$2"
 
     if [[ -n $3 ]]; then
         declare -g "$3"
@@ -183,4 +173,49 @@ lreadp() {
     else
         read -r -p "$prompt"
     fi
+}
+
+lmenu() {
+    if [[ -z "$lang" ]]; then
+        echo "toybox.sh - lreadp: ${RED}TypeError:${NC} missing 'lang'."
+        return 1
+    fi
+
+    local args=("$@")
+    local titulo
+    local final_opts=()
+    footer=""
+
+    # Título
+    if [[ "$lang" == "1" ]]; then
+        titulo="${args[0]}"
+    else
+        titulo="${args[1]}"
+    fi
+
+    # Opções + footer
+    local i=2
+    while (( i < ${#args[@]} )); do
+        local en="${args[i]}"
+        local pt="${args[i+1]}"
+
+        if [[ "$en" == "@footer" ]]; then
+            # Footer detectado
+            if [[ "$lang" == "1" ]]; then
+                footer="$pt"
+            else
+                footer="${args[i+2]}"
+            fi
+            break
+        fi
+
+        # Opção normal
+        if [[ "$lang" == "1" ]]; then final_opts+=("$en")
+        else final_opts+=("$pt")
+        fi
+
+        ((i+=2))
+    done
+
+    menu "$titulo" "${final_opts[@]}"
 }

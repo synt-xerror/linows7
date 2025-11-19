@@ -2,7 +2,21 @@
 
 source ./toybox.sh
 
-language
+
+if [[ $(cat ./lang) == "" || $1 == "-reset" ]]; then
+    rm ./lang
+fi
+
+if [[ ! -f ./lang ]]; then
+    menu \
+        "Before continuing, select a language\nAntes de continuar, selecione um idioma" \
+        " English (US)" \
+        " Português (BR)"
+
+    echo "$selected" > ./lang
+fi
+
+lang=$(cat ./lang)
 
 if [[ -n "$USER" ]]; then
     fUSER=", $USER"
@@ -39,10 +53,28 @@ playaudio startup.wav
 
 sleep 1
 
-lechoe "\n  Bem-vindo à instalação do Linows 7$fUSER!\n" "\n  Welcome to Linows 7 installation$fUSER!\n"
+lechoe \
+    "\n  Bem-vindo à instalação do Linows 7$fUSER!\n" \
+    "\n  Welcome to Linows 7 installation$fUSER!\n"
 
-lreadp "  Pressione [ENTER]: " "  Press [ENTER]: " choice
+lreadp \
+    "  Pressione [ENTER]: " \
+    "  Press [ENTER]: "
 
-lechoe "\n${BLUE}>  Obrigado por testar! :D${NC}" "\n${BLUE}> Thank you for testing! :D${NC}"
+clear
 
-exit
+lmenu \
+  "Escolha a versão" "Choose the version" \
+  "Linows 7 Starter" "Linows 7 Starter" \
+  "Linows 7 Home" "Linows 7 Home" \
+  "Linows 7 Premium" "Linows 7 Premium" \
+  "Linows 7 Ultimate" "Linows 7 Ultimate" \
+  "@footer" \
+  "Dúvidas? Saiba qual escolher em wiki.linows7.org/versions" \
+  "Not sure? Find out which one to choose at wiki.linows7.org/versions"
+
+selected=$(($selected+1))
+
+lechoe \
+    "\n > Você escolheu: $selected\n" \
+    "\n > You choose: $selected\n"
