@@ -78,3 +78,4 @@ selected=$(($selected+1))
 lechoe \
     "\n > Você escolheu: $selected\n" \
     "\n > You choose: $selected\n"
+    
