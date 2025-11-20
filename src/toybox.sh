@@ -73,21 +73,53 @@ anime() {
     done
 }
 s=0
+
 menu() {
-    title="$1"
-    shift
-    options=("$@")
+    local titles=()
+    local footer=""
+    local options=()
+
+    # parser de parâmetros
+    while (( $# > 0 )); do
+        case "$1" in
+            @title)
+                titles+=( "$2" )
+                shift 2
+                ;;
+            @footer)
+                footer="$2"
+                shift 2
+                ;;
+            @circular)
+                circular=1
+                shift
+                ;;
+            *)
+                options+=( "$1" )
+                shift
+                ;;
+        esac
+    done
 
     while true; do
         clear
-        
-        if [ $s -lt 0 ]; then
-            s=0
-        elif [ $s -gt $((${#options[@]} - 1)) ]; then
-            s=$((${#options[@]} - 1)) 
+
+        # comportamento circular
+        if [[ $circular ]]; then
+            (( s < 0 )) && s=$((${#options[@]} - 1))
+            (( s >= ${#options[@]} )) && s=0
+        else
+            (( s < 0 )) && s=0
+            (( s >= ${#options[@]} )) && s=$((${#options[@]} - 1))
         fi
 
-        echo -e "$title\n"
+        # imprimir todos os títulos
+        for t in "${titles[@]}"; do
+            echo -e "$t"
+        done
+        [[ ${#titles[@]} -gt 0 ]] && echo
+
+        # imprimir opções
         for i in "${!options[@]}"; do
             if [[ $s == $i ]]; then
                 echo -e "\e[30;47m> ${options[i]}\e[0m"
@@ -96,10 +128,9 @@ menu() {
             fi
         done
 
-        if [[ -n "$footer" ]]; then
-            echo -e "\n$footer"
-        fi
+        [[ -n "$footer" ]] && echo -e "\n$footer"
 
+        # leitura de teclas
         read -rsn1 key
         if [[ -z $key ]]; then
             key=$'\n'
@@ -107,16 +138,15 @@ menu() {
             read -rsn2 -t 0.01 rest
             key+="$rest"
         fi
+
         case $key in
             $'\e[A') s=$((s-1)) ;;
             $'\e[B') s=$((s+1)) ;;
-            $'\e') exit 0;;
+            $'\e') clear; exit 0;;
             $'\n'|$'\r') selected="$s"; break ;;
-            *) ;;
         esac
     done
 }
-
 
 lecho() {
     if [[ -z "$lang" ]]; then
@@ -125,8 +155,8 @@ lecho() {
     fi
 
     local prompt
-    [[ "$lang" == "1" ]] && prompt="$1"
-    [[ "$lang" == "0" ]] && prompt="$2"
+    [[ "$lang" == "0" ]] && prompt="$1"
+    [[ "$lang" == "1" ]] && prompt="$2"
 
     echo "$prompt"
 }
@@ -138,8 +168,8 @@ lechoe() {
     fi
 
     local prompt
-    [[ "$lang" == "1" ]] && prompt="$1"
-    [[ "$lang" == "0" ]] && prompt="$2"
+    [[ "$lang" == "0" ]] && prompt="$1"
+    [[ "$lang" == "1" ]] && prompt="$2"
 
     echo -e "$prompt"
 }
@@ -151,8 +181,8 @@ lprintf() {
     fi
 
     local prompt
-    [[ "$lang" == "1" ]] && prompt="$1"
-    [[ "$lang" == "0" ]] && prompt="$2"
+    [[ "$lang" == "0" ]] && prompt="$1"
+    [[ "$lang" == "1" ]] && prompt="$2"
 
     printf "$prompt"
 }
@@ -164,8 +194,8 @@ lreadp() {
     fi
 
     local prompt
-    [[ "$lang" == "1" ]] && prompt="$1"
-    [[ "$lang" == "0" ]] && prompt="$2"
+    [[ "$lang" == "0" ]] && prompt="$1"
+    [[ "$lang" == "1" ]] && prompt="$2"
 
     if [[ -n $3 ]]; then
         declare -g "$3"
@@ -174,48 +204,94 @@ lreadp() {
         read -r -p "$prompt"
     fi
 }
-
 lmenu() {
     if [[ -z "$lang" ]]; then
-        echo "toybox.sh - lreadp: ${RED}TypeError:${NC} missing 'lang'."
+        echo "toybox.sh - lreadp: ${RED}TypeError${NC}: missing 'lang'."
         return 1
     fi
 
-    local args=("$@")
-    local titulo
-    local final_opts=()
-    footer=""
+    local args=( "$@" )
+    local titles=()
+    local options=()
+    local footer=""
 
-    # Título
-    if [[ "$lang" == "1" ]]; then
-        titulo="${args[0]}"
-    else
-        titulo="${args[1]}"
-    fi
-
-    # Opções + footer
-    local i=2
+    local i=0
     while (( i < ${#args[@]} )); do
-        local en="${args[i]}"
-        local pt="${args[i+1]}"
+        local key="${args[i]}"
+        local pt="${args[i+1]:-}"
+        local en="${args[i+2]:-}"
 
-        if [[ "$en" == "@footer" ]]; then
-            # Footer detectado
-            if [[ "$lang" == "1" ]]; then
-                footer="$pt"
-            else
-                footer="${args[i+2]}"
-            fi
-            break
-        fi
+        # ---------------------------------------------------------------------
+        # @title (multiplos)
+        # ---------------------------------------------------------------------
+        [[ "$key" == "@title" ]] && {
+            # normalização para ":" e campos ausentes
+            [[ "$pt" == ":" ]] && pt="$en"
+            [[ "$en" == ":" ]] && en="$pt"
+            [[ -z "$en" ]] && en="$pt"
+            [[ -z "$pt" ]] && pt="$en"
 
-        # Opção normal
-        if [[ "$lang" == "1" ]]; then final_opts+=("$en")
-        else final_opts+=("$pt")
-        fi
+            [[ "$lang" == "1" ]] && titles+=( "$en" ) || titles+=( "$pt" )
+
+            ((i+=3))
+            continue
+        }        
+
+        # ---------------------------------------------------------------------
+        # @footer (único)
+        # ---------------------------------------------------------------------
+        [[ "$key" == "@footer" ]] && {
+            [[ "$pt" == ":" ]] && pt="$en"
+            [[ "$en" == ":" ]] && en="$pt"
+            [[ -z "$en" ]] && en="$pt"
+            [[ -z "$pt" ]] && pt="$en"
+
+            [[ "$lang" == "1" ]] && footer="$en" || footer="$pt"
+
+            ((i+=3))
+            continue
+        }
+
+        # ---------------------------------------------------------------------
+        # Opções normais (PT EN)
+        # ---------------------------------------------------------------------
+        local o_pt="$key"
+        local o_en="$pt"
+
+        [[ "$o_pt" == ":" ]] && o_pt="$o_en"
+        [[ "$o_en" == ":" ]] && o_en="$o_pt"
+        [[ -z "$o_pt" ]] && o_pt="$o_en"
+        [[ -z "$o_en" ]] && o_en="$o_pt"
+            
+        [[ "$lang" == "1" ]] && options+=( "$o_en" ) || options+=( "$o_pt" )
 
         ((i+=2))
     done
 
-    menu "$titulo" "${final_opts[@]}"
+    # Montar lista final para menu()
+    local final=()
+
+    for t in "${titles[@]}"; do
+        final+=( "@title" "$t" )
+    done
+
+    final+=( "${options[@]}" )
+
+    [[ -n "$footer" ]] && final+=( "@footer" "$footer" )
+
+    menu "${final[@]}"
+}
+
+loading() {
+    [[ ! $1 ]] && echo "toybox$ - loading: ${RED}SyntaxError${NC}: missing 'type' argument."
+    [[ ! $2 ]] && echo "toybox$ - loading: ${RED}SyntaxError${NC}: missing 'time' argument."
+    color="${3:-}" # color
+
+    [[ "$1" == "spin" ]] && {
+        clear && echo "\033[;${3};0m | \033[0m" \
+        sleep $2 && clear && echo "\033[;${3};0m / \033[0m" \
+        sleep $2 && clear && echo "\033[;${3};0m - \033[0m" \
+        sleep $2 && clear && echo "\033[;${3};0m \ \033[0m" 
+    }
+
 }

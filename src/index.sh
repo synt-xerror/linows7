@@ -1,28 +1,20 @@
 #!/bin/bash
 
+trap "clear; exit 0" SIGINT
 source ./toybox.sh
 
+[[ $lang == "" || $1 == "-reset" ]] && rm ./lang
 
-if [[ $(cat ./lang) == "" || $1 == "-reset" ]]; then
-    rm ./lang
-fi
-
-if [[ ! -f ./lang ]]; then
+[[ ! -f ./lang ]] && \
     menu \
+        "@title" \
         "Before continuing, select a language\nAntes de continuar, selecione um idioma" \
         " English (US)" \
         " Português (BR)"
-
     echo "$selected" > ./lang
-fi
 
-lang=$(cat ./lang)
-
-if [[ -n "$USER" ]]; then
-    fUSER=", $USER"
-else
-    fUSER=""
-fi
+[[ -n "$USER" ]] && fUSER=", $USER" || fUSER=""
+lang=$(< ./lang)
 
 clear
 
@@ -46,7 +38,7 @@ echo -e "   | |    (_) ${YELLOW}         \"VEzjt:;;z>*\`${NC}  |____  |"
 echo -e "   | |     _ _ __   _____      _____      / / "
 echo -e "   | |    | | '_ \ / _ \ \ /\ / / __|    / /  "
 echo -e "   | |____| | | | | (_) \ V  V /\__ \   / /   "
-echo -e "   |______|_|_| |_|\___/ \_/\_/ |___/  /_/ "
+echo -e "   |______|_|_| |_|\___/ \_/\_/ |___/  /_/    "
 echo -e "\n${YELLOW}  v0.0.2-alpha ${NC}"
 
 playaudio startup.wav
@@ -54,28 +46,33 @@ playaudio startup.wav
 sleep 1
 
 lechoe \
-    "\n  Bem-vindo à instalação do Linows 7$fUSER!\n" \
-    "\n  Welcome to Linows 7 installation$fUSER!\n"
+    "\n  Welcome to Linows 7 installation$fUSER!\n" \
+    "\n  Bem-vindo à instalação do Linows 7$fUSER!\n"
 
 lreadp \
-    "  Pressione [ENTER]: " \
-    "  Press [ENTER]: "
+    "  Press [ENTER]: " \
+    "  Pressione [ENTER]: "
 
 clear
 
 lmenu \
-  "Escolha a versão" "Choose the version" \
-  "Linows 7 Starter" "Linows 7 Starter" \
-  "Linows 7 Home" "Linows 7 Home" \
-  "Linows 7 Premium" "Linows 7 Premium" \
-  "Linows 7 Ultimate" "Linows 7 Ultimate" \
+  "@title" \
+  "Choose the edition" "Escolha a edição" \
+  "Starter" ":" \
+  "Home" ":" \
+  "Premium" ":" \
+  "Ultimate" ":" \
+  "Custom" ":" \
   "@footer" \
-  "Dúvidas? Saiba qual escolher em wiki.linows7.org/versions" \
-  "Not sure? Find out which one to choose at wiki.linows7.org/versions"
+  "Not sure? Find out which one to choose at https://github.com/synt-xerror/linows7/wiki/Versionss" \
+  "Dúvidas? Saiba qual escolher em https://github.com/synt-xerror/linows7/wiki/Versions" \
+  "@circular"
 
 selected=$(($selected+1))
 
-lechoe \
-    "\n > Você escolheu: $selected\n" \
-    "\n > You choose: $selected\n"
-    
+[[ $selected = 1 ]] && chmod +x starter.sh && ./starter.sh
+[[ $selected = 1 ]] && chmod +x home.sh && ./home.sh
+[[ $selected = 1 ]] && chmod +x premium.sh && ./premium.sh
+[[ $selected = 1 ]] && chmod +x ultimate.sh && ./ultimate.sh
+[[ $selected = 1 ]] && chmod +x custom.sh && ./custom.sh
+
