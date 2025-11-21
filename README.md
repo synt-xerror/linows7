@@ -1,12 +1,12 @@
-<div>
-   <div style="display: flex; justify-content: center; align-items: center;">
-        <img src="https://download.logo.wine/logo/Windows_7/Windows_7-Logo.wine.png" width="150" />
-        <p style="font-family: 'Segoe UI', sans-serif; font-size: 40px; margin-left: -30px; margin-top: 10px;">Linows 7</p>
-   </div>
-    <div style="display: flex; justify-content: center; align-items: center;">
-        <p style="font-family: 'Segoe UI', sans-serif; margin-top: -35px;  margin-left: 41px;">0.0.3-alpha</p>
-    </div>
-</div>
+<table align="center">
+<tr>
+  <td><img src="win7-logo.png" width="100"></td>
+  <td><p align="center" style="font-family: 'Segoe UI', sans-serif; font-size: 55px;">Linows 7</p></td>
+</tr>
+</table>
+<p align="center">0.0.3-alpha</p>
+
+
 
 ---
 
@@ -21,6 +21,7 @@ The content is used exclusively for educational, entertainment, and digital pres
 
 Fontes:
 
+  
 
 
 ## Credits
