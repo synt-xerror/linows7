@@ -1,6 +1,7 @@
 source ./toybox.sh
+source ./index.sh
 
-lang=$(cat ./lang)
+lang=$(< ./lang)
 
 lmenu \
     "@title" \
@@ -17,3 +18,5 @@ lmenu \
 "\nAre you sure?" "\nTem certeza?" \
     "Yes" "Sim" \
     "No" "Não"
+
+[[ "$selected" == 1 ]] && versions

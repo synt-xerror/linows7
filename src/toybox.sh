@@ -204,6 +204,7 @@ lreadp() {
         read -r -p "$prompt"
     fi
 }
+
 lmenu() {
     if [[ -z "$lang" ]]; then
         echo "toybox.sh - lreadp: ${RED}TypeError${NC}: missing 'lang'."
@@ -283,15 +284,26 @@ lmenu() {
 }
 
 loading() {
-    [[ ! $1 ]] && echo "toybox$ - loading: ${RED}SyntaxError${NC}: missing 'type' argument."
-    [[ ! $2 ]] && echo "toybox$ - loading: ${RED}SyntaxError${NC}: missing 'time' argument."
-    color="${3:-}" # color
+    [[ ! $1 ]] && echo -e "toybox.sh - loading: ${RED}SyntaxError${NC}: missing 'type' argument." && exit 1
+    [[ ! $2 ]] && echo -e "toybox.sh - loading: ${RED}SyntaxError${NC}: missing 'interval' argument." && exit 1
+    [[ ! $3 ]] && echo -e "toybox.sh - loading: ${RED}SyntaxError${NC}: missing 'times' argument." && exit 1
 
-    [[ "$1" == "spin" ]] && {
-        clear && echo "\033[;${3};0m | \033[0m" \
-        sleep $2 && clear && echo "\033[;${3};0m / \033[0m" \
-        sleep $2 && clear && echo "\033[;${3};0m - \033[0m" \
-        sleep $2 && clear && echo "\033[;${3};0m \ \033[0m" 
-    }
+    local type="$1"
+    local interval="$2"
+    local times="$3"
+    local color="${4:-0}" # cor padrão 0 se não passada
+    local spinner=("|" "/" "-" "\\") # frames do spinner
 
+    if [[ "$type" == "spin" ]]; then
+        for ((i=0; i<times; i++)); do
+            for frame in "${spinner[@]}"; do
+                clear
+                echo -e "\033[;${color};0m $frame \033[0m"
+                sleep "$interval"
+            done
+        done
+    else
+        echo -e "toybox.sh - loading: ${RED}ValueError${NC}: unknown type '$type'."
+        return 1
+    fi
 }
