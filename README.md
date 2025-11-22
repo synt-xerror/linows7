@@ -1,9 +1,8 @@
-<table align="center" border="0" cellspacing="0" cellpadding="0">
-<tr>
-  <td><img src="win7-logo.png" width="100"></td>
-  <td><p align="center" style="font-size: 60px;">Linows 7</p></td>
-</tr>
-</table>
+<div align="center" >
+
+  <img style="border-radius: 10px;" src="banner.png">
+
+</div>
 
 <p align="center">0.0.3-alpha</p>
 
@@ -16,14 +15,11 @@ This project utilizes original Windows 7 system resources.
 (such as fonts, sounds, wallpapers) obtained
 legally from legitimate copies and/or public files made available by Microsoft.
 
-The content is used exclusively for educational, entertainment, and digital preservation purposes; there is no commercial redistribution or encouragement of piracy.
+The content is used exclusively for educational, entertainment, and digital preservation purposes; there is no commercial redistribution or encuragement of piracy.
 
 ---
 
 Fontes:
-
-  
-
 
 ## Credits
 
